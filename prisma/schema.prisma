@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model users {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  full_name     String         @db.VarChar(150)
+  email         String         @unique @db.VarChar(255)
+  password_hash String
+  role          String         @default("agent") @db.VarChar(30)
+  is_active     Boolean        @default(true)
+  created_at    DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime       @default(now()) @db.Timestamptz(6)
+  clients       clients[]
+  appointments  appointments[]
+}
+
+model clients {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_by      String?        @db.Uuid
+  full_name       String         @db.VarChar(200)
+  phone           String?        @db.VarChar(30)
+  email           String?        @db.VarChar(255)
+  passport_number String?        @db.VarChar(50)
+  passport_expiry DateTime?      @db.Date
+  destination     String?        @db.VarChar(200)
+  visa_type       String?        @db.VarChar(100)
+  status          String         @default("en_attente") @db.VarChar(30)
+  notes           String?
+  created_at      DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime       @default(now()) @db.Timestamptz(6)
+  users           users?         @relation(fields: [created_by], references: [id])
+  appointments    appointments[]
+}
+
+model appointments {
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  client_id        String      @db.Uuid
+  agent_id         String?     @db.Uuid
+  appointment_date DateTime    @db.Timestamptz(6)
+  status           String      @default("planifie") @db.VarChar(30)
+  notes            String?
+  created_at       DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime    @default(now()) @db.Timestamptz(6)
+  clients          clients     @relation(fields: [client_id], references: [id], onDelete: Cascade)
+  users            users?      @relation(fields: [agent_id], references: [id])
+  reminders        reminders[]
+}
+
+model reminders {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  appointment_id String       @db.Uuid
+  scheduled_at   DateTime     @db.Timestamptz(6)
+  sent_at        DateTime?    @db.Timestamptz(6)
+  channel        String       @default("sms") @db.VarChar(20)
+  status         String       @default("pending") @db.VarChar(20)
+  message_body   String
+  error_message  String?
+  appointments   appointments @relation(fields: [appointment_id], references: [id], onDelete: Cascade)
+}
