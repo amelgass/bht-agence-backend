@@ -88,4 +88,4 @@ cron.schedule('0 8 * * *', sendReminders, {
 console.log('⏰ Scheduler démarré — rappels envoyés chaque jour à 08:00')
 
 // Décommenter pour tester immédiatement :
-// sendReminders()
+sendReminders()
