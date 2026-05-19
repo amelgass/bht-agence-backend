@@ -17,3 +17,4 @@ app.use('/api/auth', require('./routes/auth.routes'))
 app.listen(PORT, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`)
 })
+require('./reminder.job')
